@@ -5,6 +5,11 @@ import { FaRegUser } from "react-icons/fa";
 import { RiRobot2Line } from "react-icons/ri";
 import { BsQuestionCircle, BsCodeSlash, BsLightbulb } from "react-icons/bs";
 import { getProblemStatement } from "../utils/scraper";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+// Initialize Gemini
+const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY || '');
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 // Define quick prompts interface
 interface QuickPrompt {
@@ -46,6 +51,8 @@ const ChatInterface = () => {
   const [inputText, setInputText] = useState("");
   const [isMinimized, setIsMinimized] = useState(false);
   const [problemStatement, setProblemStatement] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Get problem statement when component mounts
@@ -54,40 +61,57 @@ const ChatInterface = () => {
     setProblemStatement(problem);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim()) return;
+  const generateResponse = async (prompt: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    // Include problem statement in user's context
-    const userMessage = inputText;
-    setMessages([...messages, { text: userMessage, isUser: true }]);
-    setInputText("");
+      // Construct the prompt with context
+      const fullPrompt = `
+        Context: ${problemStatement}
+        
+        User Question: ${prompt}
+        
+        Please provide a helpful response based on the context above.
+      `;
 
-    // Mock response - Later replace with actual LLM call
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: "This is a mock response. Replace with actual LLM response using problem statement context: " + problemStatement.substring(0, 100) + "...",
-          isUser: false,
-        },
-      ]);
-    }, 500);
+      const result = await model.generateContent(fullPrompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      return text;
+    } catch (err) {
+      console.error('Error generating response:', err);
+      setError('Failed to generate response. Please try again.');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleQuickPrompt = (prompt: string) => {
-    // Include problem statement in quick prompt context
-    setMessages([...messages, { text: prompt, isUser: true }]);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputText.trim() || isLoading) return;
 
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: "This is a mock response for quick prompt. Will use problem statement: " + problemStatement.substring(0, 100) + "...",
-          isUser: false,
-        },
-      ]);
-    }, 500);
+    const userMessage = inputText;
+    setMessages(prev => [...prev, { text: userMessage, isUser: true }]);
+    setInputText("");
+
+    const response = await generateResponse(userMessage);
+    if (response) {
+      setMessages(prev => [...prev, { text: response, isUser: false }]);
+    }
+  };
+
+  const handleQuickPrompt = async (prompt: string) => {
+    if (isLoading) return;
+    
+    setMessages(prev => [...prev, { text: prompt, isUser: true }]);
+    const response = await generateResponse(prompt);
+    
+    if (response) {
+      setMessages(prev => [...prev, { text: response, isUser: false }]);
+    }
   };
 
   return (
@@ -131,12 +155,16 @@ const ChatInterface = () => {
               <div className="space-y-4">
                 {QUICK_PROMPTS.map((prompt) => (
                   <div
-                    className="quick-prompt-button bg-gray-100 border rounded-md cursor-pointer px-2 py-1"
+                    className="quick-prompt-button bg-white border rounded-lg cursor-pointer p-4 hover:border-blue-500 transition-all"
                     key={prompt.id}
                     onClick={() => handleQuickPrompt(prompt.prompt)}
                   >
-                    <div className="quick-prompt-text text-black text-sm">
-                      {prompt.prompt}
+                    <div className="flex items-center gap-3">
+                      <div className="text-blue-600">{prompt.icon}</div>
+                      <div>
+                        <div className="text-gray-900 font-medium">{prompt.text}</div>
+                        <div className="text-gray-500 text-sm">{prompt.description}</div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -165,7 +193,7 @@ const ChatInterface = () => {
                           : "bg-white text-gray-900"
                       }`}
                     >
-                      <p className="text-[15px] leading-relaxed">
+                      <p className="text-[15px] leading-relaxed whitespace-pre-wrap">
                         {message.text}
                       </p>
                     </div>
@@ -178,6 +206,25 @@ const ChatInterface = () => {
                     )}
                   </div>
                 ))}
+                
+                {/* Loading indicator */}
+                {isLoading && (
+                  <div className="flex items-center justify-start mb-4">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    </div>
+                    <div className="bg-white text-gray-500 px-4 py-3 rounded-2xl shadow-md">
+                      Thinking...
+                    </div>
+                  </div>
+                )}
+
+                {/* Error message */}
+                {error && (
+                  <div className="text-red-500 text-center text-sm">
+                    {error}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -191,14 +238,16 @@ const ChatInterface = () => {
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                className="flex-1 px-4 py-3 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-200"
-                placeholder="Type a message..."
+                disabled={isLoading}
+                className="flex-1 px-4 py-3 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-200 disabled:opacity-50"
+                placeholder={isLoading ? "Please wait..." : "Type a message..."}
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-gray-900 text-white rounded-lg min-w-[80px] font-medium"
+                disabled={isLoading || !inputText.trim()}
+                className="px-4 py-2 bg-gray-900 text-white rounded-lg min-w-[80px] font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Send
+                {isLoading ? "..." : "Send"}
               </button>
             </div>
           </form>
