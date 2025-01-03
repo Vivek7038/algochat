@@ -6,7 +6,10 @@ import './styles/tailwind.css';
 const Popup = () => {
   return (
     <div className="w-[400px] h-[600px] p-4">
-      <h1 className="text-2xl font-bold">Chrome Extension</h1>
+      <h1 className="text-2xl font-bold">AlgoChat</h1>
+      <p className="text-sm text-gray-600 mt-2">
+        Chat and discuss Algochurn technical interview questions
+      </p>
     </div>
   );
 };
