@@ -3,7 +3,11 @@
   "name": "AlgoChat",
   "version": "1.0.0",
   "description": "Chat and discuss Algochurn technical interview questions",
-  "permissions": ["storage", "tabs"],
+  "permissions": [
+    "storage",
+    "tabs",
+    "webNavigation"
+  ],
   "host_permissions": ["https://www.algochurn.com/*"],
   "background": {
     "service_worker": "background.js"

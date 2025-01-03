@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { BiExpandAlt, BiCollapseAlt } from "react-icons/bi";
 import { IoClose } from "react-icons/io5";
 import { FaRegUser } from "react-icons/fa";
@@ -46,6 +46,13 @@ const QUICK_PROMPTS: QuickPrompt[] = [
     description: "Get a helpful hint",
     icon: <BsCodeSlash size={20} />,
   },
+  {
+    id: "explain",
+    text: "Explain me the question",
+    prompt: "Can you explain this question in one sentence?",
+    description: "Get a concise explanation of the question",
+    icon: <BsQuestionCircle size={20} />,
+  },
 ];
 
 interface Message {
@@ -68,12 +75,57 @@ const ChatInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Function to fetch and update problem statement
+  const updateProblemStatement = useCallback(() => {
+    const newProblemStatement = getProblemStatement();
+    if (newProblemStatement !== problemStatement) {
+      setProblemStatement(newProblemStatement);
+      // Clear previous messages when problem changes
+      setMessages([]);
+    }
+  }, [problemStatement]);
+
+  // Listen for URL changes
   useEffect(() => {
-    // Get problem statement when component mounts
-      const problem = getProblemStatement();
-    console.log(problem, "problem");
-    setProblemStatement(problem);
-  }, []);
+    const handleUrlChange = (message: any) => {
+      if (message.type === 'URL_CHANGED') {
+        // Wait a bit for the DOM to update
+        setTimeout(updateProblemStatement, 1000);
+      }
+    };
+
+    // Add message listener
+    chrome.runtime.onMessage.addListener(handleUrlChange);
+
+    // Initial fetch
+    updateProblemStatement();
+
+    // Cleanup
+    return () => {
+      chrome.runtime.onMessage.removeListener(handleUrlChange);
+    };
+  }, [updateProblemStatement]);
+
+  // Also watch for DOM changes that might indicate a route change
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'childList' ) {
+          updateProblemStatement();
+          break;
+        }
+      }
+    });
+
+    // Start observing the document with the configured parameters
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    // Cleanup
+    return () => observer.disconnect();
+  }, [updateProblemStatement]);
 
   const generateResponse = async (prompt: string) => {
     try {
@@ -190,8 +242,8 @@ const ChatInterface = () => {
       {/* Header */}
       <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <RiRobot2Line className="text-xl text-white" />
-          <h2 className="font-semibold text-white">AlgoChat Assistant</h2>
+          <RiRobot2Line className="text-xl  text-black" />
+          <h2 className="font-semibold  text-black">AlgoChat Assistant</h2>
         </div>
         <div className="flex items-center gap-2">
           <button
