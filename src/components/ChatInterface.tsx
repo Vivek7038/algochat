@@ -6,6 +6,10 @@ import { RiRobot2Line } from "react-icons/ri";
 import { BsQuestionCircle, BsCodeSlash, BsLightbulb } from "react-icons/bs";
 import { getProblemStatement } from "../utils/scraper";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import type { Components } from 'react-markdown';
+import type { DetailedHTMLProps, HTMLAttributes } from 'react';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY || '');
@@ -44,10 +48,20 @@ const QUICK_PROMPTS: QuickPrompt[] = [
   },
 ];
 
+interface Message {
+  text: string;
+  isUser: boolean;
+}
+
+// Add this interface for code component props
+interface CodeProps extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
+  inline?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+}
+
 const ChatInterface = () => {
-  const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>(
-    []
-  );
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isMinimized, setIsMinimized] = useState(false);
   const [problemStatement, setProblemStatement] = useState<string>("");
@@ -114,6 +128,60 @@ const ChatInterface = () => {
     }
   };
 
+  const MessageContent = ({ text, isUser }: { text: string; isUser: boolean }) => {
+    if (isUser) {
+      return <p className="text-[15px] leading-relaxed text-white">{text}</p>;
+    }
+
+    return (
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        className="markdown-content text-[15px] leading-relaxed prose prose-sm max-w-none 
+          prose-headings:text-gray-800 
+          prose-p:text-gray-800 
+          prose-strong:text-gray-800 
+          prose-pre:bg-gray-100 
+          prose-pre:p-3 
+          prose-pre:rounded-lg 
+          prose-code:text-blue-700 
+          prose-code:bg-blue-50 
+          prose-code:px-1.5 
+          prose-code:py-0.5 
+          prose-code:rounded 
+          prose-code:text-sm
+          prose-code:before:content-none 
+          prose-code:after:content-none
+          prose-ul:text-gray-800
+          prose-ol:text-gray-800
+          prose-li:text-gray-800
+          [&>*:last-child]:mb-0"
+        components={{
+          h1: ({ children }) => <h1 className="text-xl font-bold mb-4 text-gray-800">{children}</h1>,
+          h2: ({ children }) => <h2 className="text-lg font-bold mb-3 text-gray-800">{children}</h2>,
+          h3: ({ children }) => <h3 className="text-base font-bold mb-2 text-gray-800">{children}</h3>,
+          p: ({ children }) => <p className="mb-4 last:mb-0 text-gray-800">{children}</p>,
+          ul: ({ children }) => <ul className="list-disc pl-4 mb-4 space-y-2 text-gray-800">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal pl-4 mb-4 space-y-2 text-gray-800">{children}</ol>,
+          li: ({ children }) => <li className="mb-1 text-gray-800">{children}</li>,
+          code: ({ inline, children }: CodeProps) => (
+            inline ? 
+              <code className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-sm font-medium">{children}</code> :
+              <pre className="bg-gray-100 p-3 rounded-lg overflow-x-auto my-3 text-gray-800">
+                <code className="text-sm">{children}</code>
+              </pre>
+          ),
+          blockquote: ({ children }) => (
+            <blockquote className="border-l-4 border-gray-300 pl-4 italic my-4 text-gray-700">
+              {children}
+            </blockquote>
+          ),
+        }}
+      >
+        {text}
+      </ReactMarkdown>
+    );
+  };
+
   return (
     <div
       className={`chat-interface ${isMinimized ? "minimized" : ""}`}
@@ -122,26 +190,19 @@ const ChatInterface = () => {
       {/* Header */}
       <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <RiRobot2Line className="text-xl" />
-          <h2 className="font-semibold text-black">AlgoChat Assistant </h2>
+          <RiRobot2Line className="text-xl text-white" />
+          <h2 className="font-semibold text-white">AlgoChat Assistant</h2>
         </div>
-        <div
-          className="flex flex-direction-row  items-center gap-x-2 gap-y-1"
-          style={{ flexDirection: "row", columnGap: "10px", rowGap: "10px" }}
-        >
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setIsMinimized(!isMinimized)}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
           >
-            {isMinimized ? (
-              <BiExpandAlt size={20} />
-            ) : (
-              <BiCollapseAlt size={20} />
-            )}
+            {isMinimized ? <BiExpandAlt size={20} /> : <BiCollapseAlt size={20} />}
           </button>
           <button
             onClick={() => setIsMinimized(true)}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
           >
             <IoClose size={20} />
           </button>
@@ -160,10 +221,10 @@ const ChatInterface = () => {
                     onClick={() => handleQuickPrompt(prompt.prompt)}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="text-blue-600">{prompt.icon}</div>
-                      <div>
-                        <div className="text-gray-900 font-medium">{prompt.text}</div>
-                        <div className="text-gray-500 text-sm">{prompt.description}</div>
+                      <div className="text-blue-600 flex-shrink-0">{prompt.icon}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-gray-900 font-medium truncate">{prompt.text}</div>
+                        <div className="text-gray-500 text-sm truncate">{prompt.description}</div>
                       </div>
                     </div>
                   </div>
@@ -174,33 +235,32 @@ const ChatInterface = () => {
                 {messages.map((message, index) => (
                   <div
                     key={index}
-                    className={`flex items-center mb-4 ${
+                    className={`flex items-start mb-4 ${
                       message.isUser ? "justify-end" : "justify-start"
                     }`}
                   >
                     {/* Bot Avatar */}
                     {!message.isUser && (
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
                         <RiRobot2Line className="text-blue-600" size={20} />
                       </div>
                     )}
 
                     {/* Message Bubble */}
                     <div
-                      className={`max-w-[70%] px-4 py-3 rounded-2xl shadow-md ${
+                      className={`max-w-[85%] px-4 py-3 rounded-2xl shadow-sm break-words overflow-hidden ${
                         message.isUser
                           ? "bg-blue-600 text-white"
-                          : "bg-white text-gray-900"
+                          : "bg-white text-gray-800 border border-gray-100"
                       }`}
+                      style={{ wordBreak: 'break-word' }}
                     >
-                      <p className="text-[15px] leading-relaxed whitespace-pre-wrap">
-                        {message.text}
-                      </p>
+                      <MessageContent text={message.text} isUser={message.isUser} />
                     </div>
 
                     {/* User Avatar */}
                     {message.isUser && (
-                      <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center ml-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center ml-3 flex-shrink-0">
                         <FaRegUser className="text-white" size={20}/>
                       </div>
                     )}
@@ -239,13 +299,13 @@ const ChatInterface = () => {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 disabled={isLoading}
-                className="flex-1 px-4 py-3 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-200 disabled:opacity-50"
+                className="flex-1 px-4 py-3 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-200 disabled:opacity-50 text-gray-900"
                 placeholder={isLoading ? "Please wait..." : "Type a message..."}
               />
               <button
                 type="submit"
                 disabled={isLoading || !inputText.trim()}
-                className="px-4 py-2 bg-gray-900 text-white rounded-lg min-w-[80px] font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg min-w-[80px] font-medium disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
               >
                 {isLoading ? "..." : "Send"}
               </button>
