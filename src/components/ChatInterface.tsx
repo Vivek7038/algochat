@@ -74,6 +74,7 @@ const ChatInterface = () => {
   const [problemStatement, setProblemStatement] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState<string>('');
 
   // Function to fetch and update problem statement
   const updateProblemStatement = useCallback(() => {
@@ -127,10 +128,42 @@ const ChatInterface = () => {
     return () => observer.disconnect();
   }, [updateProblemStatement]);
 
+  // Initialize API key from storage
+  useEffect(() => {
+    chrome.storage.local.get(['algochat_api_key'], (result) => {
+      if (result.algochat_api_key) {
+        setApiKey(result.algochat_api_key);
+      }
+    });
+
+    // Listen for API key updates from popup
+    const handleMessage = (message: any) => {
+      if (message.type === 'API_KEY_UPDATED') {
+        setApiKey(message.apiKey);
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(handleMessage);
+    return () => chrome.runtime.onMessage.removeListener(handleMessage);
+  }, []);
+
   const generateResponse = async (prompt: string) => {
+    if (!apiKey) {
+      setError('Please set your API key in the extension popup');
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
+
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          maxOutputTokens: 1000, // Limit tokens
+        },
+      });
 
       // Construct the prompt with context
       const fullPrompt = `
@@ -147,9 +180,8 @@ const ChatInterface = () => {
       
       return text;
     } catch (err) {
-      console.error('Error generating response:', err);
-      setError('Failed to generate response. Please try again.');
-      return null;
+      setError('Failed to generate response. Please check your API key.');
+      console.error('Generation error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -240,7 +272,7 @@ const ChatInterface = () => {
       style={{ zIndex: 2147483647 }}
     >
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg flex justify-between items-center">
+      <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-black rounded-t-lg flex justify-between items-center">
         <div className="flex items-center gap-2">
           <RiRobot2Line className="text-xl  text-black" />
           <h2 className="font-semibold  text-black">AlgoChat Assistant</h2>
