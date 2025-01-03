@@ -1,0 +1,60 @@
+/* Reset and base styles */
+#algo-chat-container {
+  all: initial;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  position: fixed;
+  z-index: 2147483647 !important; /* Maximum z-index value */
+}
+
+#algo-chat-container * {
+  box-sizing: border-box !important;
+}
+
+/* Ensure our styles override any existing styles */
+#algo-chat-container .chat-interface {
+  position: fixed !important;
+  bottom: 1rem !important;
+  right: 1rem !important;
+  z-index: 2147483647 !important;
+  background-color: white !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border: 1px solid rgba(229, 231, 235, 1) !important;
+  transition: all 300ms ease-in-out !important;
+  width: 380px !important;
+  height: 600px !important;
+}
+
+#algo-chat-container .chat-interface.minimized {
+  width: 300px !important;
+  height: 60px !important;
+}
+
+/* Force button styles */
+#algo-chat-container button {
+  background-color: #2563eb !important;
+  color: white !important;
+}
+
+#algo-chat-container button:hover {
+  background-color: #1d4ed8 !important;
+}
+
+/* Force text colors */
+#algo-chat-container .text-white {
+  color: white !important;
+}
+
+#algo-chat-container .bg-white {
+  background-color: white !important;
+}
+
+#algo-chat-container .bg-blue-600 {
+  background-color: #2563eb !important;
+}
+
+#algo-chat-container .bg-gray-50 {
+  background-color: #f9fafb !important;
+} 

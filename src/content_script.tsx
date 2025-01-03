@@ -1,14 +1,45 @@
-const ALLOWED_PATHS = ['/frontend'];
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import ChatInterface from './components/ChatInterface';
+import './styles/content_script.css';
 
 const init = () => {
-  const currentPath = window.location.pathname;
+  console.log('AlgoChat init started');
   
-  if (!ALLOWED_PATHS.some(path => currentPath.startsWith(path))) {
-    return;
+  // Remove any existing container
+  const existingContainer = document.getElementById('algo-chat-container');
+  if (existingContainer) {
+    existingContainer.remove();
   }
 
-  console.log('AlgoChat initialized on Algochurn frontend questions page');
-  // Your chat interface initialization code will go here
+  // Create container for chat interface
+  const container = document.createElement('div');
+  container.id = 'algo-chat-container';
+  container.style.zIndex = '2147483647';
+  document.body.appendChild(container);
+
+  console.log('Container created:', container);
+
+  try {
+    // Render chat interface
+    const root = createRoot(container);
+    root.render(
+      <React.StrictMode>
+        <ChatInterface />
+      </React.StrictMode>
+    );
+    console.log('Chat interface rendered successfully');
+  } catch (error) {
+    console.error('Error rendering chat interface:', error);
+  }
 };
 
-init(); 
+// Ensure the script runs after the page is loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+// Re-run initialization when navigating between pages (for SPAs)
+window.addEventListener('popstate', init); 
