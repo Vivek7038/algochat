@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BiExpandAlt, BiCollapseAlt } from "react-icons/bi";
 import { IoClose } from "react-icons/io5";
 import { FaRegUser } from "react-icons/fa";
 import { RiRobot2Line } from "react-icons/ri";
 import { BsQuestionCircle, BsCodeSlash, BsLightbulb } from "react-icons/bs";
+import { getProblemStatement } from "../utils/scraper";
 
 // Define quick prompts interface
 interface QuickPrompt {
@@ -44,20 +45,30 @@ const ChatInterface = () => {
   );
   const [inputText, setInputText] = useState("");
   const [isMinimized, setIsMinimized] = useState(false);
+  const [problemStatement, setProblemStatement] = useState<string>("");
+
+  useEffect(() => {
+    // Get problem statement when component mounts
+      const problem = getProblemStatement();
+    console.log(problem, "problem");
+    setProblemStatement(problem);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
-    setMessages([...messages, { text: inputText, isUser: true }]);
+    // Include problem statement in user's context
+    const userMessage = inputText;
+    setMessages([...messages, { text: userMessage, isUser: true }]);
     setInputText("");
 
-    // Mock response
+    // Mock response - Later replace with actual LLM call
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
         {
-          text: "This is a mock response. Replace with actual chat functionality.",
+          text: "This is a mock response. Replace with actual LLM response using problem statement context: " + problemStatement.substring(0, 100) + "...",
           isUser: false,
         },
       ]);
@@ -65,13 +76,14 @@ const ChatInterface = () => {
   };
 
   const handleQuickPrompt = (prompt: string) => {
+    // Include problem statement in quick prompt context
     setMessages([...messages, { text: prompt, isUser: true }]);
 
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
         {
-          text: "This is a mock response. Replace with actual chat functionality.",
+          text: "This is a mock response for quick prompt. Will use problem statement: " + problemStatement.substring(0, 100) + "...",
           isUser: false,
         },
       ]);
