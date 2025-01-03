@@ -8,7 +8,7 @@ const ChatInterface = () => {
   const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>(
     []
   );
-  const [inputText, setInputText] = useState("dfhdfgh");
+  const [inputText, setInputText] = useState("");
   const [isMinimized, setIsMinimized] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -39,7 +39,7 @@ const ChatInterface = () => {
       <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg flex justify-between items-center">
         <div className="flex items-center gap-2">
           <RiRobot2Line className="text-xl" />
-          <h2 className="font-semibold text-black">AlgoChat Assistant vivek </h2>
+          <h2 className="font-semibold text-black">AlgoChat Assistant </h2>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -78,10 +78,10 @@ const ChatInterface = () => {
                   </div>
                 )}
                 <div
-                  className={`max-w-[70%] p-3 rounded-lg ${
+                  className={`max-w-[70%] px-3 py-2 rounded-lg ${
                     message.isUser
-                      ? "bg-blue-600 text-white rounded-br-none"
-                      : "bg-white text-gray-800 shadow-sm rounded-bl-none"
+                      ? "bg-blue-600 text-white rounded-br-none rounded-tl-none"
+                      : "bg-white text-gray-800 shadow-sm rounded-bl-none rounded-tr-none"
                   }`}
                 >
                   {message.text}
@@ -105,7 +105,7 @@ const ChatInterface = () => {
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 placeholder="Type your message..."
               />
               <button
