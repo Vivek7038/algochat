@@ -5,52 +5,34 @@ import './styles/content_script.css';
 
 const init = () => {
   console.log('AlgoChat init started');
-  
-  // Development auto-reload
-  if (process.env.NODE_ENV === 'development') {
-    const reloadInterval = setInterval(() => {
-      chrome.runtime.sendMessage({ type: 'RELOAD_EXTENSION' }, (response) => {
-        if (chrome.runtime.lastError) {
-          clearInterval(reloadInterval);
-        }
-      });
-    }, 1000);
-  }
-
-  // Remove any existing container
-  const existingContainer = document.getElementById('algo-chat-container');
-  if (existingContainer) {
-    existingContainer.remove();
-  }
-
-  // Create container for chat interface
-  const container = document.createElement('div');
-  container.id = 'algo-chat-container';
-  container.style.zIndex = '2147483647';
-  document.body.appendChild(container);
-
-  console.log('Container created:', container);
 
   try {
-    // Render chat interface
+    // Safely remove existing container if it exists
+    const existingContainer = document.getElementById('algo-chat-container');
+    if (existingContainer && existingContainer.parentNode) {
+      existingContainer.parentNode.removeChild(existingContainer);
+    }
+
+    // Create new container
+    const container = document.createElement('div');
+    container.id = 'algo-chat-container';
+    document.body.appendChild(container);
+
+    // Create root and render
     const root = createRoot(container);
     root.render(
       <React.StrictMode>
         <ChatInterface />
       </React.StrictMode>
     );
+    
     console.log('Chat interface rendered successfully');
   } catch (error) {
-    console.error('Error rendering chat interface:', error);
+    console.error('Error initializing chat interface:', error);
   }
 };
 
-// Ensure the script runs after the page is loaded
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
+// Initialize only after DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
   init();
-}
-
-// Re-run initialization when navigating between pages (for SPAs)
-window.addEventListener('popstate', init); 
+}); 
