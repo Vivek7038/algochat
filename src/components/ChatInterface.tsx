@@ -89,15 +89,16 @@ const ChatInterface = () => {
           <RiRobot2Line className="text-xl" />
           <h2 className="font-semibold text-black">AlgoChat Assistant </h2>
         </div>
-              <div className="flex flex-direction-row  items-center gap-x-2 gap-y-1"
-              style={{flexDirection: "row" , columnGap: "10px" , rowGap: "10px"}}
-              >
+        <div
+          className="flex flex-direction-row  items-center gap-x-2 gap-y-1"
+          style={{ flexDirection: "row", columnGap: "10px", rowGap: "10px" }}
+        >
           <button
             onClick={() => setIsMinimized(!isMinimized)}
             className="p-2 hover:bg-white/10 rounded-full transition-colors"
           >
             {isMinimized ? (
-              <BiExpandAlt size={20} /> 
+              <BiExpandAlt size={20} />
             ) : (
               <BiCollapseAlt size={20} />
             )}
@@ -122,26 +123,31 @@ const ChatInterface = () => {
                     key={prompt.id}
                     onClick={() => handleQuickPrompt(prompt.prompt)}
                   >
-                    <div className="quick-prompt-text text-black text-sm">{prompt.prompt}</div>
+                    <div className="quick-prompt-text text-black text-sm">
+                      {prompt.prompt}
+                    </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {messages.map((message, index) => (
                   <div
                     key={index}
-                    className={`flex ${
+                    className={`flex items-center mb-4 ${
                       message.isUser ? "justify-end" : "justify-start"
                     }`}
                   >
+                    {/* Bot Avatar */}
                     {!message.isUser && (
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                        <RiRobot2Line className="text-blue-600" />
+                        <RiRobot2Line className="text-blue-600" size={20} />
                       </div>
                     )}
+
+                    {/* Message Bubble */}
                     <div
-                      className={`max-w-[70%] px-4 py-3 rounded-2xl ${
+                      className={`max-w-[70%] px-4 py-3 rounded-2xl shadow-md ${
                         message.isUser
                           ? "bg-blue-600 text-white"
                           : "bg-white text-gray-900"
@@ -151,9 +157,11 @@ const ChatInterface = () => {
                         {message.text}
                       </p>
                     </div>
+
+                    {/* User Avatar */}
                     {message.isUser && (
                       <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center ml-3">
-                        <FaRegUser className="text-white" />
+                        <FaRegUser className="text-white" size={20}/>
                       </div>
                     )}
                   </div>
