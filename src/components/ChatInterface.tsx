@@ -39,7 +39,7 @@ const ChatInterface = () => {
       <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg flex justify-between items-center">
         <div className="flex items-center gap-2">
           <RiRobot2Line className="text-xl" />
-          <h2 className="font-semibold text-black">AlgoChat Assistant</h2>
+          <h2 className="font-semibold text-black">AlgoChat Assistant vivek </h2>
         </div>
         <div className="flex items-center gap-2">
           <button

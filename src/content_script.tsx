@@ -6,6 +6,17 @@ import './styles/content_script.css';
 const init = () => {
   console.log('AlgoChat init started');
   
+  // Development auto-reload
+  if (process.env.NODE_ENV === 'development') {
+    const reloadInterval = setInterval(() => {
+      chrome.runtime.sendMessage({ type: 'RELOAD_EXTENSION' }, (response) => {
+        if (chrome.runtime.lastError) {
+          clearInterval(reloadInterval);
+        }
+      });
+    }, 1000);
+  }
+
   // Remove any existing container
   const existingContainer = document.getElementById('algo-chat-container');
   if (existingContainer) {
