@@ -4,60 +4,71 @@ interface Track {
   id: string;
   name: string;
   url: string;
+  artist: string;
 }
 
-// Example playlist - in production, you'd fetch this from Jamendo API
+// Using first 10 LoFi Coding tracks
 const SAMPLE_PLAYLIST = [
   {
     id: "1",
-    name: "Chill Lofi Background Music",
-    url: "https://mp3l.jamendo.com/?trackid=1890762&format=mp31",
+    name: "LoFi Coding I",
+    artist: "Kitacus",
+    url: "https://m.zenmix.io/lofi/songs/audio/kitacus-lofi-coding-1.mp3"
   },
   {
     id: "2",
-    name: "Lo-Fi Chillhop",
-    url: "https://mp3l.jamendo.com/?trackid=1890763&format=mp31",
+    name: "LoFi Coding II",
+    artist: "Kitacus",
+    url: "https://m.zenmix.io/lofi/songs/audio/kitacus-lofi-coding-2.mp3"
   },
   {
     id: "3",
-    name: "Lo-Fi Chill",
-    url: "https://mp3l.jamendo.com/?trackid=1890764&format=mp31",
+    name: "LoFi Coding III",
+    artist: "Kitacus",
+    url: "https://m.zenmix.io/lofi/songs/audio/kitacus-lofi-coding-3.mp3"
   },
   {
     id: "4",
-    name: "Lofi on",
-    url: "https://mp3l.jamendo.com/?trackid=1890765&format=mp31",
+    name: "LoFi Coding IV",
+    artist: "Kitacus",
+    url: "https://m.zenmix.io/lofi/songs/audio/kitacus-lofi-coding-4.mp3"
   },
   {
     id: "5",
-    name: "Lofi Chillout Hip Hop Beat",
-    url: "https://mp3l.jamendo.com/?trackid=1890766&format=mp31",
+    name: "LoFi Coding V",
+    artist: "Kitacus",
+    url: "https://m.zenmix.io/lofi/songs/audio/kitacus-lofi-coding-5.mp3"
   },
   {
     id: "6",
-    name: "Lofi Study Beats",
-    url: "https://mp3l.jamendo.com/?trackid=1890767&format=mp31",
+    name: "LoFi Coding VI",
+    artist: "Kitacus",
+    url: "https://m.zenmix.io/lofi/songs/audio/kitacus-lofi-coding-6.mp3"
   },
   {
     id: "7",
-    name: "Coding Lofi Vibes",
-    url: "https://mp3l.jamendo.com/?trackid=1890768&format=mp31",
+    name: "LoFi Coding VII",
+    artist: "Kitacus",
+    url: "https://m.zenmix.io/lofi/songs/audio/kitacus-lofi-coding-7.mp3"
   },
   {
     id: "8",
-    name: "Instrumental Lofi Groove",
-    url: "https://mp3l.jamendo.com/?trackid=1890769&format=mp31",
+    name: "LoFi Coding VIII",
+    artist: "Kitacus",
+    url: "https://m.zenmix.io/lofi/songs/audio/kitacus-lofi-coding-8.mp3"
   },
   {
     id: "9",
-    name: "Relaxing Lofi Beats",
-    url: "https://mp3l.jamendo.com/?trackid=1890770&format=mp31",
+    name: "LoFi Coding IX",
+    artist: "Kitacus",
+    url: "https://m.zenmix.io/lofi/songs/audio/kitacus-lofi-coding-9.mp3"
   },
   {
     id: "10",
-    name: "Focus Lofi Instrumentals",
-    url: "https://mp3l.jamendo.com/?trackid=1890771&format=mp31",
-  },
+    name: "LoFi Coding X",
+    artist: "Kitacus",
+    url: "https://m.zenmix.io/lofi/songs/audio/kitacus-lofi-coding-10.mp3"
+  }
 ];
 
 export const useMusic = () => {
@@ -68,18 +79,48 @@ export const useMusic = () => {
   const togglePlay = () => {
     if (!audioRef.current) {
       // If no track is playing, start a random one
-      const randomTrack =
-        SAMPLE_PLAYLIST[Math.floor(Math.random() * SAMPLE_PLAYLIST.length)];
+      const randomTrack = SAMPLE_PLAYLIST[Math.floor(Math.random() * SAMPLE_PLAYLIST.length)];
       setCurrentTrack(randomTrack);
       audioRef.current = new Audio(randomTrack.url);
-      audioRef.current.play();
-      setIsPlaying(true);
+      
+      // Add error handling
+      audioRef.current.onerror = (e) => {
+        console.error('Error playing audio:', e);
+        setIsPlaying(false);
+        setCurrentTrack(null);
+        audioRef.current = null;
+      };
+
+      // Add ended event handler to play next track
+      audioRef.current.onended = () => {
+        setIsPlaying(false);
+        audioRef.current = null;
+        // Automatically play next track
+        togglePlay();
+      };
+
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true);
+          console.log('Now playing:', randomTrack.name, 'by', randomTrack.artist);
+        })
+        .catch(err => {
+          console.error('Failed to play audio:', err);
+          setIsPlaying(false);
+        });
+
     } else if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play();
-      setIsPlaying(true);
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true);
+        })
+        .catch(err => {
+          console.error('Failed to resume audio:', err);
+          setIsPlaying(false);
+        });
     }
   };
 
