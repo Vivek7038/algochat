@@ -297,12 +297,12 @@ const ChatInterface = () => {
           >
             {isMinimized ? <BiExpandAlt size={20} /> : <BiCollapseAlt size={20} />}
           </button>
-          <button
+          {/* <button
             onClick={() => setIsMinimized(true)}
             className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
           >
             <IoClose size={20} />
-          </button>
+          </button> */}
         </div>
       </div>
 
