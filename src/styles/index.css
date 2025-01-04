@@ -240,3 +240,37 @@ code {
 .music-button:hover .music-tooltip {
   opacity: 1;
 }
+
+@keyframes musicPulse {
+  0% {
+    transform: scale(1);
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    transform: scale(1.1);
+    filter: hue-rotate(180deg);
+  }
+  100% {
+    transform: scale(1);
+    filter: hue-rotate(360deg);
+  }
+}
+
+.music-playing {
+  position: relative;
+}
+
+.music-playing::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+  opacity: 0.2;
+  z-index: -1;
+  animation: musicPulse 2s infinite;
+}
+
+.music-playing svg {
+  filter: drop-shadow(0 0 4px rgba(255, 107, 107, 0.5));
+}

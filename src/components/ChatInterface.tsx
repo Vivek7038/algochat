@@ -282,13 +282,27 @@ const ChatInterface = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={togglePlay}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
-            title={isPlaying ? 'Pause Music' : 'Play Music'}
+            className={`p-2 hover:bg-white/10 rounded-full transition-colors relative group ${
+              isPlaying ? 'music-playing' : ''
+            }`}
+            title={`${isPlaying ? currentTrack?.name || 'Now Playing' : 'Play Music'}`}
           >
             {isPlaying ? (
-              <BsMusicNoteBeamed size={20} />
+              <BsMusicNoteBeamed 
+                size={20} 
+                className="text-rose-400 animate-pulse" 
+              />
             ) : (
-              <BsMusicNote size={20} />
+              <BsMusicNote 
+                size={20} 
+                className="text-white group-hover:text-rose-300 transition-colors" 
+              />
+            )}
+            {/* Show current track tooltip */}
+            {isPlaying && currentTrack && (
+              <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/75 text-white text-xs py-1 px-2 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                {currentTrack.name}
+              </span>
             )}
           </button>
           <button
