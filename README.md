@@ -17,6 +17,17 @@ AlgoChat is designed exclusively for [Algochurn](https://www.algochurn.com), pro
 
 ## Installation
 
+### Option 1: Quick Install (Pre-built)
+
+For those who want to skip the build process, you can download the pre-built extension files:
+
+1. Download the pre-built dist folder from [Google Drive](https://drive.google.com/drive/folders/1HpKknb4UXX-bhpVnFT3G-g6oBeN2Icii?usp=drive_link)
+2. Load in Chrome:
+   - Navigate to `chrome://extensions/`
+   - Enable "Developer mode"
+   - Click "Load unpacked"
+   - Select the downloaded folder
+
 ### Prerequisites
 
 - Node.js (v14+)
