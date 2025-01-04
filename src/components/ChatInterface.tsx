@@ -3,13 +3,14 @@ import { BiExpandAlt, BiCollapseAlt } from "react-icons/bi";
 import { IoClose } from "react-icons/io5";
 import { FaRegUser } from "react-icons/fa";
 import { RiRobot2Line } from "react-icons/ri";
-import { BsQuestionCircle, BsCodeSlash, BsLightbulb } from "react-icons/bs";
+import { BsQuestionCircle, BsCodeSlash, BsLightbulb, BsMusicNote, BsMusicNoteBeamed } from "react-icons/bs";
 import { getProblemStatement } from "../utils/scraper";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
 import type { DetailedHTMLProps, HTMLAttributes } from 'react';
+import { useMusic } from '../hooks/useMusic';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY || '');
@@ -75,6 +76,7 @@ const ChatInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiKey, setApiKey] = useState<string>('');
+  const { isPlaying, currentTrack, togglePlay } = useMusic();
 
   // Function to fetch and update problem statement
   const updateProblemStatement = useCallback(() => {
@@ -279,6 +281,17 @@ const ChatInterface = () => {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={togglePlay}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
+            title={isPlaying ? 'Pause Music' : 'Play Music'}
+          >
+            {isPlaying ? (
+              <BsMusicNoteBeamed size={20} />
+            ) : (
+              <BsMusicNote size={20} />
+            )}
+          </button>
+          <button
             onClick={() => setIsMinimized(!isMinimized)}
             className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
           >
@@ -389,7 +402,7 @@ const ChatInterface = () => {
               <button
                 type="submit"
                 disabled={isLoading || !inputText.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg min-w-[80px] font-medium disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg min-w-[80px] font-medium disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
               >
                 {isLoading ? "..." : "Send"}
               </button>
